@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galería Multimedia Ilimitada</title>
+<style>
+body{font-family:Arial,sans-serif;margin:20px;background:#f5f5f5}
+h1{text-align:center}
+#info{text-align:center;font-weight:bold}
+#galeria{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:15px}
+.card{background:white;padding:10px;border-radius:10px}
+img,video{width:100%;height:220px;object-fit:cover}
+</style>
+</head>
+<body>
+<h1>Galería de Fotos y Videos</h1>
+<input type="file" id="files" accept="image/*,video/*" multiple>
+<p id="info">0 archivos cargados</p>
+<div id="galeria"></div>
+
+<script>
+const files=document.getElementById('files');
+const galeria=document.getElementById('galeria');
+const info=document.getElementById('info');
+
+files.addEventListener('change',()=>{
+ const lista=[...files.files];
+ galeria.innerHTML='';
+ info.textContent=lista.length+' archivos cargados';
+
+ lista.forEach(file=>{
+   const card=document.createElement('div');
+   card.className='card';
+   const url=URL.createObjectURL(file);
+
+   if(file.type.startsWith('image/')){
+      const img=document.createElement('img');
+      img.src=url;
+      card.appendChild(img);
+   }else if(file.type.startsWith('video/')){
+      const video=document.createElement('video');
+      video.src=url;
+      video.controls=true;
+      card.appendChild(video);
+   }
+
+   const p=document.createElement('p');
+   p.textContent=file.name;
+   card.appendChild(p);
+   galeria.appendChild(card);
+ });
+});
+</script>
+</body>
+</html>
