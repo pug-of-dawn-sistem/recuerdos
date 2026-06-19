@@ -1,9 +1,7 @@
 <script>
-fetch("media.json")
+fetch("./media.json")
 .then(res => {
-    if (!res.ok) {
-        throw new Error("No se pudo cargar media.json");
-    }
+    if (!res.ok) throw new Error("No se encontró media.json");
     return res.json();
 })
 .then(files => {
@@ -23,7 +21,11 @@ fetch("media.json")
             video.src = file;
             video.controls = true;
             video.playsInline = true;
-            video.preload = "metadata";
+
+            // 🔍 error si no carga video
+            video.onerror = () => {
+                console.log("❌ Video no encontrado:", file);
+            };
 
             card.appendChild(video);
 
@@ -33,6 +35,12 @@ fetch("media.json")
             img.src = file;
             img.loading = "lazy";
 
+            // 🔍 error si no carga imagen
+            img.onerror = () => {
+                console.log("❌ Imagen no encontrada:", file);
+                img.alt = "No se pudo cargar: " + file;
+            };
+
             card.appendChild(img);
         }
 
@@ -40,8 +48,8 @@ fetch("media.json")
     });
 
 })
-.catch(error => {
-    console.error("❌ Error:", error);
-    alert("No se pudieron cargar los recuerdos");
+.catch(err => {
+    console.error("❌ Error cargando galería:", err);
+    alert("No se pudieron cargar los recuerdos. Revisa media.json o rutas.");
 });
 </script>
