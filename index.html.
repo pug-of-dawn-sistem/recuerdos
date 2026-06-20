@@ -19,7 +19,7 @@ h1{color:#e1306c}
 </style>
 </head>
 <body>
-<header><h1>📸 Mis Recuerdos</h1></header>
+<header><h1>📸 Nuestros Recuerdos</h1></header>
 <div class="loading" id="loading">Cargando recuerdos...</div>
 <div id="galeria"></div>
 <div class="modal" id="modal"><span class="cerrar">&times;</span></div>
