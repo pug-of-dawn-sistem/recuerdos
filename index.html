@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recuerdos Pro</title>
+<title>Recuerdos</title>
 
 <style>
 body {
@@ -22,15 +22,6 @@ header {
 .upload {
   text-align: center;
   padding: 10px;
-}
-
-button {
-  background: #ff2d55;
-  border: none;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
 }
 
 .gallery {
@@ -57,30 +48,63 @@ button {
   justify-content: space-between;
   padding: 8px;
 }
-</style>
 
+button {
+  background: #ff2d55;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>📸 Mis Recuerdos</header>
+
+<!-- 🎵 MUSICA -->
+<div style="text-align:center; padding:10px;">
+  <button onclick="toggleMusic()">🎵 Play / Pause</button>
+
+  <audio id="music" loop>
+    <source src="media/musica.mp3" type="audio/mpeg">
+  </audio>
+</div>
+
+<!-- 📤 SUBIR FOTO -->
+<div class="upload">
+  <input type="file" id="file">
+  <button onclick="uploadPhoto()">📤 Subir foto</button>
+</div>
+
+<!-- 📸 GALERIA -->
+<div class="gallery" id="gallery"></div>
+
+<!-- 🔥 FIREBASE -->
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 
-import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  getDocs, 
-  doc, 
-  updateDoc, 
-  increment 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  updateDoc,
+  increment
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-import { 
-  getStorage, 
-  ref, 
-  uploadBytes, 
-  getDownloadURL 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-storage.js";
 
-// 🔥 CONFIG FIREBASE
+// 🔥 CONFIG FIREBASE (PEGA LA TUYA AQUÍ)
 const firebaseConfig = {
   apiKey: "TU_API_KEY",
   authDomain: "TU_AUTH_DOMAIN",
@@ -93,6 +117,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+window.db = db;
+window.storage = storage;
 
 // 📤 SUBIR FOTO
 window.uploadPhoto = async function () {
@@ -153,9 +180,7 @@ let music;
 let playing = false;
 
 window.toggleMusic = function () {
-  if (!music) {
-    music = document.getElementById("music");
-  }
+  if (!music) music = document.getElementById("music");
 
   if (playing) {
     music.pause();
@@ -167,30 +192,6 @@ window.toggleMusic = function () {
 };
 
 </script>
-
-</head>
-
-<body>
-
-<header>📸 Recuerdos Pro</header>
-
-<!-- 🎵 MUSICA -->
-<div style="text-align:center; padding:10px;">
-  <button onclick="toggleMusic()">🎵 Play / Pause Música</button>
-
-  <audio id="music" loop>
-    <source src="media/musica.mp3" type="audio/mpeg">
-  </audio>
-</div>
-
-<!-- 📤 SUBIR FOTO -->
-<div class="upload">
-  <input type="file" id="file">
-  <button onclick="uploadPhoto()">📤 Subir foto</button>
-</div>
-
-<!-- 📸 GALERIA -->
-<div class="gallery" id="gallery"></div>
 
 </body>
 </html>
