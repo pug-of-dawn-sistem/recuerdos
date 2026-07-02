@@ -2,68 +2,139 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recuerdos</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Arial,sans-serif;background:#fafafa}
-header{position:sticky;top:0;background:#fff;padding:15px;text-align:center;border-bottom:1px solid #ddd;z-index:1000}
-h1{color:#e1306c}
-#galeria{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px;padding:20px}
-.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-.card img,.card video{width:100%;height:300px;object-fit:cover;display:block}
-.loading{text-align:center;padding:40px}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);justify-content:center;align-items:center;z-index:9999}
-.modal img,.modal video{max-width:95%;max-height:95%}
-.cerrar{position:absolute;top:20px;right:30px;color:white;font-size:40px;cursor:pointer}
-</style>
-</head>
-<body>
-<header><h1>📸 Nuestros Recuerdos</h1></header>
-<div class="loading" id="loading">Cargando recuerdos...</div>
-<div id="galeria"></div>
-<div class="modal" id="modal"><span class="cerrar">&times;</span></div>
+<title>Recuerdos Pro</title>
 
-<script>
-const galeria=document.getElementById("galeria");
-const modal=document.getElementById("modal");
-const loading=document.getElementById("loading");
+<script type="module">
 
-fetch("media.json")
-.then(r=>{if(!r.ok) throw new Error("No se encontró media.json"); return r.json();})
-.then(archivos=>{
- loading.style.display="none";
- archivos.forEach(ruta=>{
-   const card=document.createElement("div");
-   card.className="card";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, increment } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-   if(ruta.toLowerCase().endsWith(".mp4")){
-      const video=document.createElement("video");
-      video.src=ruta;
-      video.controls=true;
-      video.preload="none";
-      card.appendChild(video);
-   }else{
-      const img=document.createElement("img");
-      img.src=ruta;
-      img.loading="lazy";
-      img.onclick=()=>{
-        modal.innerHTML=`<span class="cerrar">&times;</span><img src="${ruta}">`;
-        modal.style.display="flex";
-        modal.querySelector(".cerrar").onclick=()=>modal.style.display="none";
-      };
-      card.appendChild(img);
-   }
-   galeria.appendChild(card);
- });
-})
-.catch(e=>{
- loading.innerHTML="❌ No se pudieron cargar los recuerdos.<br>"+e.message;
-});
+import { getStorage, ref, uploadBytes, getDownloadURL } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-modal.onclick=(e)=>{
- if(e.target===modal) modal.style.display="none";
+// 🔥 CONFIG FIREBASE
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_AUTH_DOMAIN",
+  projectId: "TU_PROJECT_ID",
+  storageBucket: "TU_STORAGE_BUCKET",
+  messagingSenderId: "TU_SENDER_ID",
+  appId: "TU_APP_ID"
 };
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// 📤 SUBIR FOTO
+window.uploadPhoto = async function () {
+  const file = document.getElementById("file").files[0];
+  if (!file) return alert("Selecciona una imagen");
+
+  const storageRef = ref(storage, "fotos/" + Date.now() + file.name);
+  await uploadBytes(storageRef, file);
+
+  const url = await getDownloadURL(storageRef);
+
+  await addDoc(collection(db, "fotos"), {
+    url: url,
+    likes: 0,
+    created: Date.now()
+  });
+
+  loadPhotos();
+};
+
+// ❤️ LIKE GLOBAL
+window.likePhoto = async function (id) {
+  const refDoc = doc(db, "fotos", id);
+  await updateDoc(refDoc, {
+    likes: increment(1)
+  });
+
+  loadPhotos();
+};
+
+// 🖼️ CARGAR FOTOS
+async function loadPhotos() {
+  const snap = await getDocs(collection(db, "fotos"));
+
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+
+  snap.forEach((d) => {
+    const data = d.data();
+
+    gallery.innerHTML += `
+      <div class="card">
+        <img src="${data.url}">
+        <div class="actions">
+          <button onclick="likePhoto('${d.id}')">❤️ Like</button>
+          <span>${data.likes || 0}</span>
+        </div>
+      </div>
+    `;
+  });
+}
+
+window.onload = loadPhotos;
+
 </script>
+
+<style>
+body { margin:0; font-family:Arial; background:#111; color:white; }
+header { text-align:center; padding:15px; background:#222; }
+
+.upload { text-align:center; padding:10px; }
+
+.gallery {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:10px;
+  padding:10px;
+}
+
+.card {
+  background:#1c1c1c;
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.card img {
+  width:100%;
+  height:160px;
+  object-fit:cover;
+}
+
+.actions {
+  display:flex;
+  justify-content:space-between;
+  padding:8px;
+}
+
+button {
+  background:#ff2d55;
+  border:none;
+  color:white;
+  padding:5px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>📸 Recuerdos Pro</header>
+
+<div class="upload">
+  <input type="file" id="file">
+  <button onclick="uploadPhoto()">📤 Subir foto</button>
+</div>
+
+<div class="gallery" id="gallery"></div>
+
 </body>
 </html>
